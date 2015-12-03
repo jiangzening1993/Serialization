@@ -2,6 +2,13 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 @SuppressWarnings("serial")
 public class AddressBook implements Serializable {
 
@@ -102,8 +109,59 @@ public class AddressBook implements Serializable {
 		ois.close();
 		
 	}
+	
+	public String toXML(){
+		String newLine = System.getProperty("line.separator");
+		String str = "<AddressBook>\n";
+		for (BuddyInfo bi : addressBook.values()) {
+			str += "<Buddy>" + newLine; 
+			str += "<Name>" + bi.getName() + "</Name>" + newLine;
+			str += "<Address>" + bi.getAddress() + "</Address>" + newLine;
+			str += "<PhoneNumber>" + bi.getPhoneNumber() + "</PhoneNumber>" + newLine;
+			str += "</Buddy>" + newLine;
+		} 
+		str += "</AddressBook>";
+		return str;
+	}
+	
+	public void ExportToXmlFile(String fileName) throws IOException {
+		BufferedWriter out;
+		try {
+			out = new BufferedWriter(new FileWriter(fileName));
+			String str = this.toXML();
+			out.write(str);
+			out.close();
+			System.out.println(str);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void importFromXmlFileDOM(File f) throws Exception{
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		DocumentBuilder d = factory.newDocumentBuilder();
+		Document doc = d.parse(f);
 
-	public static void main(String[] args) {
+		AddressBook ab = new AddressBook();
+		System.out.println("Root: " + doc.getDocumentElement().getNodeName());
+
+		NodeList lst = doc.getDocumentElement().getChildNodes();
+		for (int ii = 1; ii < lst.getLength(); ii = ii + 2) {
+			BuddyInfo b = new BuddyInfo();
+			Node n = lst.item(ii);
+			System.out.println("Child: " + n.getTextContent()); // + "-->" + n.getTextContent());
+			NodeList lst2 = n.getChildNodes();
+			String str = "";
+			for(int i = 0; i < lst2.getLength(); i++){
+				Node n2 = lst2.item(i);
+				str += n2.getTextContent() + "$";
+			}
+			ab.addBuddy(b.Factory(str));
+		}
+	}
+
+	public static void main(String[] args) throws Exception {
 		/*
 		 * BuddyInfo bi1 = new BuddyInfo(); bi1.setAddress("Carleton");
 		 * bi1.setName("Tom"); bi1.setPhoneNumber("613"); BuddyInfo bi2 = new
@@ -116,5 +174,10 @@ public class AddressBook implements Serializable {
 		// AddressBook ab = new
 		// AddressBook().importAddressBook("AddressBook.txt");
 		// ab.export("AddressBook.txt");
+		File file = new File("import.xml");
+		AddressBook ab = new AddressBook();
+		ab.importAddressBook("test.txt").ExportToXmlFile("export.xml");
+		ab.importFromXmlFileDOM(file);
+		
 	}
 }
