@@ -150,13 +150,16 @@ public class AddressBook implements Serializable {
 		for (int ii = 1; ii < lst.getLength(); ii = ii + 2) {
 			BuddyInfo b = new BuddyInfo();
 			Node n = lst.item(ii);
-			System.out.println("Child: " + n.getTextContent()); // + "-->" + n.getTextContent());
+			System.out.println("Child: " + n.getNodeName() + "-->" + n.getTextContent());
 			NodeList lst2 = n.getChildNodes();
 			String str = "";
-			for(int i = 0; i < lst2.getLength(); i++){
+			for(int i = 1; i < lst2.getLength(); i = i + 2){
 				Node n2 = lst2.item(i);
 				str += n2.getTextContent() + "$";
+				System.out.println("Child: " + n2.getNodeName() + "-->" + n2.getTextContent());
+				//System.out.println(str);
 			}
+			System.out.println(b.Factory(str).toString());
 			ab.addBuddy(b.Factory(str));
 		}
 	}
@@ -178,6 +181,7 @@ public class AddressBook implements Serializable {
 		AddressBook ab = new AddressBook();
 		ab.importAddressBook("test.txt").ExportToXmlFile("export.xml");
 		ab.importFromXmlFileDOM(file);
+		//a2.export("export.txt");
 		
 	}
 }
