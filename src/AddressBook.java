@@ -4,10 +4,14 @@ import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.SAXParser;
+import javax.xml.parsers.SAXParserFactory;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
 
 @SuppressWarnings("serial")
 public class AddressBook implements Serializable {
@@ -143,7 +147,6 @@ public class AddressBook implements Serializable {
 		DocumentBuilder d = factory.newDocumentBuilder();
 		Document doc = d.parse(f);
 
-		AddressBook ab = new AddressBook();
 		System.out.println("Root: " + doc.getDocumentElement().getNodeName());
 
 		NodeList lst = doc.getDocumentElement().getChildNodes();
@@ -160,28 +163,41 @@ public class AddressBook implements Serializable {
 				//System.out.println(str);
 			}
 			System.out.println(b.Factory(str).toString());
-			ab.addBuddy(b.Factory(str));
+			this.addBuddy(b.Factory(str));
 		}
 	}
+	
+	public void readSAX(File f) throws Exception{
+		SAXParserFactory spf = SAXParserFactory.newInstance();
+		SAXParser s = spf.newSAXParser();
+		
+		DefaultHandler dh = new DefaultHandler(){
+			public void startElement(String u, String ln, String qName, Attributes a){
+				System.out.println("START: " + qName);
+			}
+			public void endElement(String uri, String localName, String qName){
+				System.out.println("END: " + qName);
+			}
+			public void characters(char[] ch, int start, int length){
+				System.out.println("CHARS: " + new String(ch, start, length));
+			}
+		};
+		s.parse(f, dh);
+	}
 
-	public static void main(String[] args) throws Exception {
-		/*
-		 * BuddyInfo bi1 = new BuddyInfo(); bi1.setAddress("Carleton");
-		 * bi1.setName("Tom"); bi1.setPhoneNumber("613"); BuddyInfo bi2 = new
-		 * BuddyInfo(); bi2.setAddress("111 Fake Street");
-		 * bi2.setName("Mr.Buddy"); bi2.setPhoneNumber("613-555-5555");
-		 * AddressBook ab = new AddressBook(); ab.addBuddy(bi1);
-		 * ab.addBuddy(bi2); ab.export(); // ab.removeBuddy(bi); BuddyInfo bi3 =
-		 * bi1.Factory(); ab.addBuddy(bi3); ab.export();
-		 */
-		// AddressBook ab = new
-		// AddressBook().importAddressBook("AddressBook.txt");
-		// ab.export("AddressBook.txt");
+	public static void main(String[] args) {
+		
 		File file = new File("import.xml");
 		AddressBook ab = new AddressBook();
-		ab.importAddressBook("test.txt").ExportToXmlFile("export.xml");
-		ab.importFromXmlFileDOM(file);
-		//a2.export("export.txt");
+		//ab.importAddressBook("test.txt").ExportToXmlFile("export.xml");
+		try {
+			ab.importFromXmlFileDOM(file);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//ab.readSAX(file);
+		System.out.println(ab.toString());
 		
 	}
 }
